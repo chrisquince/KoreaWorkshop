@@ -73,7 +73,7 @@ sequence #: 4783	total length: 7931965	max length: 542671	N50: 18116	N90: 449
 
 ## Co-assembly
 
-We will now return to the AD samples performing a co-assembly of all these samples using 
+We will now perform a co-assembly of all these samples using 
 megahit:
 
 ```
