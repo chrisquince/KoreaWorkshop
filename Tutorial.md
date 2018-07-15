@@ -64,26 +64,20 @@ Compare to a spades assembly without noise removal:
 spades.py --only-assembler --meta -1 ReadsSub/sample1_R1.fastq -2 ReadsSub/sample1_R2.fastq -o AsemblyS -t 12 -k 23,55,77
 ```
 
+Which is better?
+
 ```
 contig-stats.pl < AssemblyS/contigs.fasta 
 sequence #: 4783	total length: 7931965	max length: 542671	N50: 18116	N90: 449
 ```
 
-
-Create assembly graph
-```
-cd Assembly
- megahit_toolkit contig2fastg 71 final.contigs.fa > final.contigs.fastg
-```
-
-
 ## Co-assembly
 
-We will now return to the AD samples performing a co-assembly of these samples using 
+We will now return to the AD samples performing a co-assembly of all these samples using 
 megahit:
 
 ```
-cd ~/Projets/AD
+cd ~/Projets/InfantGut
 ls ReadsSub/*R1.fastq | tr "\n" "," | sed 's/,$//' > R1.csv
 ls ReadsSub/*R2.fastq | tr "\n" "," | sed 's/,$//' > R2.csv
 ```
