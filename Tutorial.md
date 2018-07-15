@@ -343,19 +343,12 @@ We then can create a table of Kegg orthologs across all clusters.
 ~/repos/MAGAnalysis/scripts/CollateHits.pl > CollateHits75.csv
 ```
 
-## Annotate to Kegg modules
+##Taxonomic Classification of Contigs
 
-Now we find which Kegg modules are present in each cluster by querying their [module reconstruct tool] (http://www.genome.jp/kegg/tool/map_module.html)
 
-```
-python ~/repos/MAGAnalysis/scripts/KO2MODULEclusters2.py -i CollateHits75.csv -o Collate_modules.csv 
-```
-
-Discussion point, when is a module present? What about methanogenesis modules?
-
-##
 
 ```
+cd ~/Projects/InfantGut/
 kraken --db ~/Databases/minikraken_20141208/ --threads 8 --preload --output final_contigs_gt1000_c10K.krak final_contigs_gt1000_c10K.fa
 Loading database... complete.
 ```
@@ -365,84 +358,24 @@ kraken-report --db ~/Databases/minikraken_20141208/ final_contigs_gt1000_c10K.kr
 ```
 
 ```
-kraken-translate --db ~/Databases/minikraken_20141208/ final_contigs_gt1000_c10K.krak > final_contigs_gt1000_c10K.krak.tran
+kraken-translate --mpa-format --db ~/Databases/minikraken_20141208/ final_contigs_gt1000_c10K.krak > final_contigs_gt1000_c10K.krak.mpi.tran
 ```
 
 ```
-cut -f2 final_contigs_gt1000_c10K.krak.tran | cut -d";" -f9 > SpeciesAss.txt
-cut -f1 final_contigs_gt1000_c10K.krak.tran > Ids.txt
-paste Ids.txt SpeciesAss.txt | awk 'NF==2' | tr "\t" "," > Contig_Species.csv
+cut -f2 final_contigs_gt1000_c10K.krak.mpi.tran | cut -d"|" -f7 > SpeciesAss.txt
+cut -f1 final_contigs_gt1000_c10K.krak.mpi.tran > Ids.txt
+paste Ids.txt SpeciesAss.txt | grep "s__" | tr "\t" "," > Contig_Species.csv
 ```
 
-
-## Taxonomic classification of contigs
-
-There are many ways to taxonomically classify assembled sequence. We suggest a gene based approach. The first step is to call genes on all contigs that are greater than 1,000 bp. Shorter sequences are unlikely to contain complete 
-coding sequences. 
-
-
-Set the environment variable NR_DMD to point to the location of your formatted NR database:
-```
-export NR_DMD=$HOME/Databases/NR/nr.dmnd
-```
-
-Then we begin by copying across the ORFs called on all contigs greater than 1000bp in length.
-```
-cd ~/Projects/InfantGut
-mkdir AssignTaxa
-cd AssignTaxa
-cp ../Annotate/final_contigs_gt1000_c10K.faa .
-```
-
-Then we use diamond to match these against the NCBI NR.
-
-```
-diamond blastp -p 8 -d $NR_DMD -q final_contigs_gt1000_c10K.faa -o final_contigs_gt1000_c10K_nr.m8 
-```
-
-Discussion point, what is the difference between NCBI NR and NT?
-
-Discussion point, what is the difference between diamond blastp and blastx?
-
-To classify the contigs we need two files a gid to taxid mapping file and a mapping of taxaid to full lineage:
-
-1. gi_taxid_prot.dmp
-
-2. all_taxa_lineage_notnone.tsv
-
-These can also be downloaded from the Dropbox:
-``` 
-wget https://www.dropbox.com/s/x4s50f813ok4tqt/gi_taxid_prot.dmp.gz
-wget https://www.dropbox.com/s/honc1j5g7wli3zv/all_taxa_lineage_notnone.tsv.gz
-```
-
-The path to these files are default in the ClassifyContigNR.py script as the variables:
-```
-DEF_DMP_FILE = "/home/ubuntu/Databases/NR/gi_taxid_prot.dmp"
-
-DEF_LINE_FILE = "/home/ubuntu/Databases/NR/all_taxa_lineage_notnone.tsv"
-```
-
-We calculate the gene length in amino acids before running this.
-Then we can assign the contigs and genes called on them:
-```
-python $DESMAN/scripts/Lengths.py -i final_contigs_gt1000_c10K.faa > final_contigs_gt1000_c10K.len
-python $DESMAN/scripts/ClassifyContigNR.py final_contigs_gt1000_c10K_nr.m8 final_contigs_gt1000_c10K.len -o final_contigs_gt1000_c10K_nr -l /home/ubuntu/Databases/NR/all_taxa_lineage_notnone.tsv -g /home/ubuntu/Databases/NR/gi_taxid_prot.dmp
-```
-
-Then we extract species out:
-```
-$DESMAN/scripts/Filter.pl 8 < final_contigs_gt1000_c10K_nr_contigs.csv | grep -v "_6" | grep -v "None" > final_contigs_gt1000_c10K_nr_species.csv
-```
 
 These can then be used for a cluster confusion plot:
 ```
-$CONCOCT/scripts/Validate.pl --cfile=../Concoct/clustering_refine.csv --sfile=final_contigs_gt1000_c10K_nr_species.csv --ffile=../Assembly/final_contigs_c10K.fa --ofile=Taxa_Conf.csv
+$CONCOCT/scripts/Validate.pl --cfile=../Concoct/clustering_refine.csv --sfile=Contig_pecies.csv --ffile=../Assembly/final_contigs_c10K.fa --ofile=Taxa_Conf.csv
 ```
 Now the results will be somewhat different...
 ```
-N       M       TL      S       K       Rec.    Prec.   NMI     Rand    AdjRand
-83338   1132    5.9010e+06      26      145     0.839512        0.982511        0.684733        0.883928        0.769207
+N	M	TL	S	K	Rec.	Prec.	NMI	Rand	AdjRand
+2356	1720	1.0855e+07	46	22	0.958779	0.939837	0.883243	0.979203	0.939598
 ```
 
 Then plot:
@@ -457,7 +390,7 @@ $CONCOCT/scripts/ConfPlot.R -c Taxa_Conf.csv -o Taxa_Conf.pdf
 Assume we are starting from the 'Split' directory in which we have seperated out the cluster fasta files and we have done the COG assignments for each cluster. Then the first step is to extract each of the 36 conserved core COGs individually. There is an example bash script GetSCG.sh for doing this in phyloscripts but it will need modifying:
 
 ```
-cd ~/Projects/AD/Split
+cd ~/Projects/InfantGut/Split
 cp ~/repos/MAGAnalysis/cogs.txt .
 mkdir SCGs
 
@@ -465,7 +398,7 @@ while read line
 do
     cog=$line
     echo $cog
-     ~/repos/MAGAnalysis/phyloscripts/SelectCogsSCG.pl ../Concoct/clustering_refine_scg.tsv ../Annotate/final_contigs_gt1000_c10K.fna $cog > SCGs/$cog.ffn
+     ~/repos/MAGAnalysis/phyloscripts/SelectCogsSCG.pl ../Concoct/clustering_gt1000_scg.tsv ../Annotate/final_contigs_gt1000_c10K.fna $cog > SCGs/$cog.ffn
 done < cogs.txt
 ``` 
 
