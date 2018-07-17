@@ -220,7 +220,7 @@ First let us look at the cluster completeness:
 $CONCOCT/scripts/COGPlot.R -s clustering_gt1000_scg.tsv -o clustering_gt1000_scg.pdf
 ```
 
-![SCGs](../Figures/clustering_gt1000_scg.pdf) 
+![SCGs](./Figures/clustering_gt1000_scg.pdf) 
 
 Discussion point what is a MAG?
 
@@ -240,7 +240,7 @@ Rscript ./ClusterCovNMDS.R
 
 How well does this correlate with time/replicates.
 
-![ClusterCov](../Figures/ClusterNMDS.pdf) 
+![ClusterCov](./Figures/ClusterNMDS.pdf) 
 
 
 ## Annotate MAGs
