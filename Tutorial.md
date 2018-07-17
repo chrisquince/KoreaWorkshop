@@ -220,7 +220,7 @@ First let us look at the cluster completeness:
 $CONCOCT/scripts/COGPlot.R -s clustering_gt1000_scg.tsv -o clustering_gt1000_scg.pdf
 ```
 
-![SCGs](./Figures/clustering_gt1000_scg.pdf) 
+![SCGs](./Figures/clustering_gt1000_scg.png) 
 
 Discussion point what is a MAG?
 
@@ -240,7 +240,7 @@ Rscript ./ClusterCovNMDS.R
 
 How well does this correlate with time/replicates.
 
-![ClusterCov](./Figures/ClusterNMDS.pdf) 
+![ClusterCov](./Figures/ClusterNMDS.png) 
 
 
 ## Annotate MAGs
@@ -374,7 +374,7 @@ Then plot:
 $CONCOCT/scripts/ConfPlot.R -c Taxa_Conf.csv -o Taxa_Conf.pdf
 ```
 
-![Taxa confusion](../Figures/Taxa_Conf.pdf)
+![Taxa confusion](./Figures/Taxa_Conf.png)
 
 ## Construct a phylogenetic tree
 
